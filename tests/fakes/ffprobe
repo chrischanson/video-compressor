@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+args=" $* "
+target="${@: -1}"
+target_lower="${target,,}"
+
+emit_dvd_streams() {
+  printf 'index=0|codec_type=video|codec_name=mpeg2video|width=720|height=576|r_frame_rate=25/1|bit_rate=7500000|color_primaries=bt470bg|color_transfer=bt470bg|color_space=bt470bg\n'
+  printf 'index=1|codec_type=audio|codec_name=ac3|channels=2|channel_layout=stereo|sample_rate=48000|bit_rate=192000|tag:language=eng\n'
+  printf 'index=2|codec_type=audio|codec_name=ac3|channels=6|channel_layout=5.1|sample_rate=48000|bit_rate=448000\n'
+  printf 'index=3|codec_type=subtitle|codec_name=dvd_subtitle|tag:language=eng\n'
+}
+
+emit_ts_streams() {
+  printf 'index=0|codec_type=video|codec_name=mpeg2video|width=1920|height=1080|r_frame_rate=25/1|bit_rate=16000000\n'
+  printf 'index=1|codec_type=video|codec_name=mpeg2video|width=1920|height=1080|r_frame_rate=25/1|bit_rate=16000000\n'
+  printf 'index=2|codec_type=audio|codec_name=ac3|channels=6|channel_layout=5.1(side)|sample_rate=48000|bit_rate=448000|tag:language=eng\n'
+  printf 'index=3|codec_type=audio|codec_name=ac3|channels=6|channel_layout=5.1(side)|sample_rate=48000|bit_rate=448000\n'
+  printf 'index=4|codec_type=subtitle|codec_name=dvb_subtitle|tag:language=eng|tag:title=English SDH\n'
+  printf 'index=5|codec_type=subtitle|codec_name=dvb_subtitle|tag:language=ger\n'
+}
+
+case "$args" in
+  *"-select_streams s"*)
+    if [[ "$target_lower" == *.ifo ]]; then
+      printf 'index=0|tag:language=eng\n'
+      printf 'index=1|tag:language=ger\n'
+    elif [[ "$target_lower" == *.ts ]]; then
+      printf 'index=2|codec_name=dvb_subtitle|tag:language=eng\n'
+      printf 'index=3|codec_name=dvb_subtitle|tag:language=ger\n'
+    else
+      printf 'index=3|codec_name=dvd_subtitle|tag:language=eng\n'
+    fi
+    ;;
+  *"stream=index,codec_type,codec_name"*)
+    if [[ "$target_lower" == *.ts ]]; then
+      emit_ts_streams
+    else
+      emit_dvd_streams
+    fi
+    ;;
+esac

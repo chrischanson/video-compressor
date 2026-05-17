@@ -1,0 +1,11 @@
+load("@rules_shell//shell:sh_test.bzl", "sh_test")
+
+sh_test(
+    name = "test-video-compressor",
+    srcs = ["test-video-compressor.sh"],
+    data = [
+        "//public_projects/video-compressor:video-compressor.sh",
+        "fakes/ffmpeg",
+        "fakes/ffprobe",
+    ],
+)

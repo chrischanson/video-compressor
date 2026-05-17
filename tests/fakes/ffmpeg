@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ "${1:-}" == "-hide_banner" && "${2:-}" == "-encoders" ]]; then
+  printf ' V..... libsvtav1 SVT-AV1 encoder\n'
+  printf ' A..... flac FLAC encoder\n'
+  printf ' A..... libopus libopus encoder\n'
+  exit 0
+fi
+
+printf 'FAKE_FFMPEG_RUN'
+for arg in "$@"; do
+  printf ' %q' "$arg"
+done
+printf '\n'
