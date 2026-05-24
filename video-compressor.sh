@@ -19,7 +19,7 @@ SCRIPT_NAME="$(basename "$0")"
 
 CRF=24
 PRESET=8
-THREADS=$(( $(nproc 2>/dev/null || echo 2) / 2 ))
+THREADS=$(( $(nproc 2>/dev/null || echo 2) / 4 ))
 (( THREADS < 1 )) && THREADS=1
 TRY_MODE=false
 TRY_DURATION=300
