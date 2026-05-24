@@ -19,6 +19,8 @@ SCRIPT_NAME="$(basename "$0")"
 
 CRF=24
 PRESET=8
+THREADS=$(( $(nproc 2>/dev/null || echo 2) / 2 ))
+(( THREADS < 1 )) && THREADS=1
 TRY_MODE=false
 TRY_DURATION=300
 TRY_START=0
@@ -72,6 +74,7 @@ Options:
   --try-start <sec>      Preview start offset. Default: 0.
   --crf <0-63>           SVT-AV1 CRF quality. Default: 24.
   --preset <0-13>        SVT-AV1 speed preset. Default: 8.
+  --threads <N>          SVT-AV1 encoder thread count. Default: half of nproc.
   --output <path>        Single-file output path.
   --out-dir <path>       Output directory. Directory inputs preserve structure.
                          Also accepted as --output-root.
@@ -123,6 +126,8 @@ validate_numeric_options() {
 
   (( CRF >= 0 && CRF <= 63 )) || die "--crf must be in range 0-63"
   (( PRESET >= 0 && PRESET <= 13 )) || die "--preset must be in range 0-13"
+  is_uint "$THREADS" || die "--threads must be a positive integer"
+  (( THREADS >= 1 )) || die "--threads must be at least 1"
   (( TRY_DURATION > 0 )) || die "--try-duration must be greater than 0"
 }
 
@@ -161,6 +166,11 @@ parse_args() {
       --preset)
         need_value "$1" "$#"
         PRESET="$2"
+        shift 2
+        ;;
+      --threads)
+        need_value "$1" "$#"
+        THREADS="$2"
         shift 2
         ;;
       --output)
@@ -854,7 +864,7 @@ build_command() {
     -c:v libsvtav1
     -crf "$CRF"
     -preset "$PRESET"
-    -svtav1-params "tune=0:film-grain=0:log=0"
+    -svtav1-params "tune=0:film-grain=0:log=0:lp=${THREADS}"
     -c:s copy
     -c:t copy
     -max_muxing_queue_size 4096
